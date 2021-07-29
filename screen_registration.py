@@ -1,4 +1,5 @@
 import tkinter as tk
+import mysql.connector
 
 
 class TelaCadastro:
@@ -191,19 +192,45 @@ class TelaCadastro:
         self.contato.insert(0, contato)
 
     def cadastrar_cliente(self):
-        nome = self.nome.get().title().strip()
-        sobrenome = self.sobrenome.get().title().strip()
-        usuario = self.usuario.get().strip()
-        contato = self.contato.get()
-        senha = self.senha.get().strip()
-        confSenha = self.confirmaSenha.get().strip()
-        if self.confirmaSenha.get() == self.senha.get() != '':
-            clientes = (nome, sobrenome, usuario, contato, senha, confSenha)
-            with open('dados.txt', 'a') as arquidoDados:
-                arquidoDados.write(f'{clientes}\n')
+        if self.dados_cliente()[-1] == self.senha.get() != '':
+            clientes = self.dados_cliente()[:5]
+            with open('dados.txt', 'a', newline="") as arquidoDados:
+                arquidoDados.write(f'{clientes}' + '\n')
         else:
             print('Usuário não cadastrado, campos obrigatórios')
+        self.cadastro_no_BD_MySQL()
         self.cadastroTela.destroy()
 
+    def dados_cliente(self):
+        dados = (
+        self.nome.get().title().strip(),
+        self.sobrenome.get().title().strip(),
+        self.usuario.get().strip(),
+        self.contato.get(),
+        self.senha.get().strip(),
+        self.confirmaSenha.get().strip())
+        return dados
+
+    def cadastro_no_BD_MySQL(self):
+
+        connect = mysql.connector.connect(host='localhost', user='root', password='28101565',
+                                          database='gui_interface_dados')
+        if connect.is_connected():
+            print(f'\033[1;32mConectado ao servidor MySQL versão {connect.get_server_info()}\033[m')
+            cursor = connect.cursor()
+            arquivo = open('dados.txt', 'r')
+            lines = arquivo.readlines()
+            for line in lines:
+                if len(line) == 1:
+                    print('linha sem nada')
+                else:
+                    cursor.execute(f'insert into clientescadastro (nome, sobrenome, usuario, contato, senha) '
+                                   f'values {line}')
+                connect.commit()
+            arquivo.close()
+        connect.close()
+        if connect.is_closed():
+            print(
+                f'\033[1;32mDados adcionados com sucesso no banco de dados MySQL versão {connect.get_server_info()}!\033[m')
 
 TelaCadastro()

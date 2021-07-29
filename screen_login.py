@@ -1,4 +1,6 @@
 import tkinter as tk
+import screen_registration as cd
+
 
 class TelaLogin:
     
@@ -110,7 +112,6 @@ class TelaLogin:
 
     def cadastrar_cliente(self):
         print('Cadastrado')
-        import screen_registration as cd
         cd.TelaCadastro()
 
 TelaLogin()
